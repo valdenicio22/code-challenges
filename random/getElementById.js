@@ -6,5 +6,3 @@ Document.prototype.myGetElementById = function(id){
   }
   return null;
 };
-
-console.log(myGetElementById('oi'));
