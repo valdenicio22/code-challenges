@@ -1,19 +1,26 @@
 
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useReducer } from 'react';
 import './App.css';
+import { addCircle, redoClick, undoClick } from './reducers/action';
+import { ClickState, clickReducer } from './reducers/reducer';
 
-interface ClickedStack {
+export interface ClickedStack {
   x: number;
   y: number;
 }
 
+const initialState: ClickState = {
+  clickedStack: [],
+  poppedClicks: []
+}
+
 function App() {
-  const [clickedStack, setClickedStack] = useState<ClickedStack[]>([])
-  const [poppedClicks, setPoppedClicks] = useState<ClickedStack[]>([])
+  const [clickState, dispatch] = useReducer(clickReducer, initialState)
+  const { clickedStack, poppedClicks } = clickState
 
   const handleClick = (ev: globalThis.MouseEvent): void => {
     const { clientX, clientY } = ev;
-    setClickedStack((prev) => [...prev, { x: clientX, y: clientY }]);
+    dispatch(addCircle({ x: clientX, y: clientY }))
   };
 
   useEffect(() => {
@@ -26,21 +33,12 @@ function App() {
 
   const handleUndo = (ev: MouseEvent<HTMLButtonElement>) => {
     ev.stopPropagation();
-    const shallowClickedStack = [...clickedStack];
-    const removedClick = shallowClickedStack.pop();
-    if (!removedClick) return;
-    setClickedStack(shallowClickedStack);
-    setPoppedClicks((prev) => [...prev, removedClick]);
-    return
+
+    dispatch(undoClick())
   }
   const handleRedo = (ev: MouseEvent<HTMLButtonElement>) => {
     ev.stopPropagation();
-    const shallowPoppedClicks = [...poppedClicks];
-    const removedClick = shallowPoppedClicks.pop();
-    if (!removedClick) return;
-    setPoppedClicks(shallowPoppedClicks);
-    setClickedStack((prev) => [...prev, removedClick]);
-    return
+    dispatch(redoClick())
   }
 
   return (
